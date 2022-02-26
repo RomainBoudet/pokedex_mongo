@@ -5,13 +5,26 @@
 - *Collection* : presque équivalent à une table. C'est un ensemble non structuré de documents (c'est-à-dire qu'ils n'ont pas forcément tous le même format).
 - *BSON* : _Binary JSON_. Un format développé par et pour MongoDB, basé sur la notation JSON.
 
+## Install 
+https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
+
+## CRUD 
+https://www.mongodb.com/basics/crud#:~:text=The%20basic%20methods%20of%20interacting,the%20data%20in%20your%20databases
+
+## Dump de la collection 
+Dans le terminal :
+```mongodump --collection winners --db spaceinvader``` => crer un dossier dump la ou se situe qui contient un dossier du nom de notre DBB avec dedans le fichier.bson
+
+## Aggragation et Rank :
+https://docs.mongodb.com/manual/reference/operator/aggregation/rank/
+
 ## Lancer le serveur
 
 `sudo service mongod start`
 
 ## Lancer le client (CLI)
 
-`mongo`
+`mongosh`
 
 ## Quelques commandes
 
