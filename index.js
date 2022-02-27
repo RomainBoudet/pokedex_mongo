@@ -11,7 +11,7 @@ app.set('view engine', 'ejs');
 app.set('views', 'app/views');
 
 // Envoyer des fichiers static
-app.use(express.static('public'));
+app.use(express.static('./app/public'));
 
 //Pour récupérer les données du body si nécéssaire 
 app.use(express.urlencoded({extended:true}));
@@ -29,6 +29,9 @@ app.use((req, res, next) => {
 });
 // Personne ne sait que l'app tourne sous express dans les en tête http !
 app.set('x-powered-by', false);
+
+app.locals.pageTitle = `PokeDex`;
+app.locals.pageDescription = `Attrapez les tous !`;
 
 app.use(router);
 
