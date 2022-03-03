@@ -13,7 +13,7 @@ const mainController = {
                 res.status(500).end();
             }
 
-            res.status(200).render('list', {pokemonList})
+            res.status(200).render('homepage', {pokemonList})
 
         } catch (error) {
 
@@ -22,7 +22,31 @@ const mainController = {
 
         }
 
-    }
+    },
+
+    pokemonPage : async (req, res) => {
+
+        try {
+
+            const id = parseInt(req.params.id, 10);
+
+            const onePokemeon = await datamapper.getOnePokemon(id);
+
+            const pokemonDetail = onePokemeon[0];
+
+            //console.log(" onePokemon => ",onePokemeon);
+
+            res.status(200).render('pokemonPage',  {pokemonDetail});
+
+
+        } catch (error) {
+            console.log("Erreur dans le mainController, dans la méthode pokemonPage : ", error);
+            res.status(500).end();
+        }
+
+
+
+    },
 
 
 };

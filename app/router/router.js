@@ -5,6 +5,7 @@ const mainController  = require('../controller/mainController');
 
 
 router.get('/', mainController.homepage);
+router.get('/pokemon/:id(\\d+)', mainController.pokemonPage);
 
 module.exports = router;
 
