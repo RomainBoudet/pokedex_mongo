@@ -49,49 +49,46 @@ const datamapper = {
 
     getOnePokemon: async (idPokemon) => {
 
+        // je définis un min et un max pour mes valeurs random calculées par Mongo
+        const min = 10;
+        const max = 100;
 
-        // On va chercher chaque pokemon, et pour chacun de ses type on va définir une color 
+        // On va chercher chaque pokemon, et pour chacun de ses types et weaknesses, on va définir une color 
+        // je récupére tous mes types et faiblesses :
+        const types = await db.distinct('type'); // comprend un type "normal", qui n'est pas inclut dans les weaknesses !
+        const weaknesses = await db.distinct('weaknesses'); /// Comprend trois type de plus que les "types" (dark, fairy, steel)
 
-        // je récupére tous mes type :
-
-        const types = await db.distinct('type');
-        const colors = ['aabb22', '7766ee', 'ffbb33', 'bb5544', 'ff4422', '6699ff', '6666bb', '77cc55', 'ddbb55', '77ddff', 'bbaabb', 'aa5599', 'ff5599', 'bbaa66', '3399ff'];
-        /*  
-               Fighting : 'bb5544'
-               Dragon :  '7766ee'
-               Water : '3399ff'
-               Electric : 'ffbb33'
-               Fire : 'ff4422'
-               Ice : '77ddff'
-               Bug : 'aabb22'
-               Normal : 'bbaabb'
-               Grass : '77cc55'
-               Poison : 'aa5599'
-               Psychic : 'ff5599'
-               Rock : 'bbaa66'
-               Ground : 'ddbb55'
-               Ghost : '6666bb'
-               Flying : '6699ff'
-                   */
-
+        // Je dé&finis les couleurs :
+        const colorsTypes = ['aabb22', '7766ee', 'ffbb33', 'bb5544', 'ff4422', '6699ff', '6666bb', '77cc55', 'ddbb55', '77ddff', 'bbaabb', 'aa5599', 'ff5599', 'bbaa66', '3399ff'];
+        const colorsWeaknesses = ['aabb22', '665544', '7766ee', 'ffbb33', 'd349f2', 'bb5544', 'ff4422', '6699ff', '6666bb', '77cc55', 'ddbb55', '77ddff', 'aa5599', 'ff5599', 'bbaa66', 'aaaabb', '3399ff'];
 
         const result = await db.aggregate([{
+                // Je ne prend qu'un enregistrement
                 $match: {
                     id: idPokemon
                 }
             },
+            // Je ne veux pas du field _id en sortie
             {
                 $project: {
                     _id: 0
                 }
             },
-            // Pour ajouter un tableau contenant les type et leur couleur associé :
+            // Pour ajouter un tableau contenant les type et leur couleur associé, en vue de l'utilisé pour construire un objet :
             {
                 $addFields: {
                     arrayColorType: {
 
                         $zip: {
-                            inputs: [types, colors],
+                            inputs: [types, colorsTypes],
+                        }
+
+
+                    },
+                    arrayColorWeaknesses: {
+
+                        $zip: {
+                            inputs: [weaknesses, colorsWeaknesses],
                         }
 
 
@@ -99,7 +96,7 @@ const datamapper = {
 
                 }
             },
-            // Pour fabriquer un objet type - color, selon les type du Pokemon 
+            // Pour fabriquer un objet type - color, selon les types du Pokemon :
             {
                 $addFields: {
                     colorByType: {
@@ -133,9 +130,40 @@ const datamapper = {
                             lang: "js",
                         }
 
+                    },
+                    colorByWeaknesses: {
+                        $function:
+
+                        {
+                            body: `function (weaknesses, arrayColorWeaknesses) {
+                                let resultArray = [];
+                            for (const item of weaknesses) {
+
+                            const arrayFiltered = arrayColorWeaknesses.filter(([key]) => key === item);
+                                const flat = arrayFiltered.reduce((acc, val) => acc.concat(val), [])
+                                resultArray.push(flat);
+                            }
+
+                            let myObj = {};
+                            let array = [];
+                            for (let i = 0; i < resultArray.length; i++) {
+
+                                myObj[i] = {
+                                    type: resultArray[i][0],
+                                    color: resultArray[i][1]
+                                }
+                                array.push(myObj[i]);
+                            }
+                            return array;
+
+                                }`,
+                            args: ["$weaknesses", "$arrayColorWeaknesses"],
+                            lang: "js",
+                        }
                     }
                 }
             },
+            // Pour convertir le field num en integer
             {
                 $set: {
                     num: {
@@ -146,12 +174,149 @@ const datamapper = {
                     }
 
                 }
+            },
+            //
+            {
+                $addFields: {
+                    next_evo: {
+
+                        $map: {
+                            input: "$next_evolution",
+                            as: "item", // optionel. this par défaut => "$$this"
+                            in: {
+                                name: "$$item.name",
+                                num: {
+                                    $convert: {
+                                        input: "$$item.num",
+                                        to: "int"
+                                    }
+                                }
+                            }  // ce que je demande à chaque itération
+
+                        }
+
+                    }
+
+                }
+
+            },
+            {
+                $addFields: {
+                    prev_evo: {
+
+                        $map: {
+                            input: "$prev_evolution",
+                            as: "item", // optionel. this par défaut => "$$this"
+                            in: { // je construit un objet a chaque itération, en convertisssant le num en format string en integer !   [ { name: 'Kadabra', num: 64 } ]
+                                name: "$$item.name",
+                                num: {
+                                    $convert: {
+                                        input: "$$item.num",
+                                        to: "int"
+                                    }
+                                }
+                            }  // ce que je demande à chaque itération
+
+                        }
+
+                    }
+
+                }
+
+            },
+            {
+                $addFields: { // je construit un random entre 10 et 100 via mongo ! Peu import les valeurs réelles...
+                    defense: {
+                        $add: [{
+                            $floor: [{
+                                $multiply: [{
+                                    $rand: {}
+                                }, {
+                                    $subtract: [max, min]
+                                }]
+                            }]
+                        }, min]
+                    },
+                    attaque: {
+                        $add: [{
+                            $floor: [{
+                                $multiply: [{
+                                    $rand: {}
+                                }, {
+                                    $subtract: [max, min]
+                                }]
+                            }]
+                        }, min]
+                    },
+                    pv: {
+                        $add: [{
+                            $floor: [{
+                                $multiply: [{
+                                    $rand: {}
+                                }, {
+                                    $subtract: [max, min]
+                                }]
+                            }]
+                        }, min]
+                    },
+                    attaque_spe: {
+                        $add: [{
+                            $floor: [{
+                                $multiply: [{
+                                    $rand: {}
+                                }, {
+                                    $subtract: [max, min]
+                                }]
+                            }]
+                        }, min]
+                    },
+                    defense_spe: {
+                        $add: [{
+                            $floor: [{
+                                $multiply: [{
+                                    $rand: {}
+                                }, {
+                                    $subtract: [max, min]
+                                }]
+                            }]
+                        }, min]
+                    },
+                    vitesse: {
+                        $add: [{
+                            $floor: [{
+                                $multiply: [{
+                                    $rand: {}
+                                }, {
+                                    $subtract: [max, min]
+                                }]
+                            }]
+                        }, min]
+                    },
+
+                }
+            },
+            // on supprime les champs non nécéssaire.
+            {
+                $unset: ["arrayColorType", "arrayColorWeaknesses", "next_evolution", "prev_evolution"]
             }
 
         ]).toArray();
 
+        // console.log("result[0].next_evo ==> ", result[0].next_evo);
+        // console.log("result ==> ", result);
 
-        // En JS => 
+
+
+        // next_evolution vaut => [ { num: '064', name: 'Kadabra' }, { num: '065', name: 'Alakazam' } ]
+
+        // Rappel random en JS => 
+        /* const random = (min, max) => {
+				return Math.floor(Math.random() * (max - min)) + min;
+		    }; 
+        */
+
+
+        // Rappel en JS => 
         // Je veux filtrer un tableau d'objet avec un autre tableau et récupérer des clés-valeur selon ce deuxiéme tableau !
         //result1.type = mon tableau pour filtrer
         //result1.arrayColorType = mon tableau d'objet que je veux filtrer
@@ -166,9 +331,9 @@ const datamapper = {
             resultArray.push(flat);
         }
 
-        // resultArray => [ [ 'Rock', 'bbaa66' ], [ 'Flying', '6699ff' ] ]
+         resultArray => [ [ 'Rock', 'bbaa66' ], [ 'Flying', '6699ff' ] ]
 
-        // Je récupére un tableau de tableau que je convertit en objet avec deux clés choisis :
+         Je récupére un tableau de tableau que je convertit en objet avec deux clés choisis :
 
         let myObj = {};
         let array = [];
