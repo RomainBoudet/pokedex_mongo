@@ -13,7 +13,9 @@ const mainController = {
                 res.status(500).end();
             }
 
-            res.status(200).render('homepage', {pokemonList})
+            res.status(200).render('homepage', {
+                pokemonList
+            })
 
         } catch (error) {
 
@@ -24,19 +26,21 @@ const mainController = {
 
     },
 
-    pokemonPage : async (req, res) => {
+    pokemonPage: async (req, res) => {
 
         try {
 
             const id = parseInt(req.params.id, 10);
 
-            const onePokemeon = await datamapper.getOnePokemon(id);
+            const onePokemon = await datamapper.getOnePokemon(id);
 
-            const pokemonDetail = onePokemeon[0];
+            const pokemonDetail = onePokemon[0];
 
-            //console.log(" onePokemon => ",onePokemeon);
+            console.log(pokemonDetail);
 
-            res.status(200).render('pokemonPage',  {pokemonDetail});
+            res.status(200).render('pokemonPage', {
+                pokemonDetail
+            });
 
 
         } catch (error) {
@@ -44,7 +48,24 @@ const mainController = {
             res.status(500).end();
         }
 
+    },
 
+    typeList: async (req, res) => {
+
+        try {
+
+            const typePokemon = await datamapper.getAllList();
+
+            const allType = typePokemon[0].colorByType;
+
+            res.status(200).render('typeList', {
+                allType 
+            });
+
+        } catch (error) {
+            console.log("Erreur dans le mainController, dans la méthode typeList : ", error);
+            res.status(500).end();
+        }
 
     },
 

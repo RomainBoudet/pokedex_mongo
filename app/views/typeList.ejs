@@ -1,0 +1,18 @@
+<%- include('partials/header') %>
+
+<h2 class="title_type text-center">Cliquez sur un type pour voir tous les pokemon de ce type</h2>
+
+<div class="cardsContainer_type">
+
+    <% for (const item of allType) { %>
+
+    <a href="/type/<%=item.type%>">
+        <h2> <span class="badge rounded-pill" style="background-color:#<%=item.color%>">
+                <%=item.type%>
+            </span></h2>
+    </a>
+
+    <% } %>
+
+
+</div>

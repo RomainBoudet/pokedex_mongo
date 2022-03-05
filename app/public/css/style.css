@@ -83,6 +83,14 @@ header a, header a:hover {
     border-radius: 1em;
 }
 
+.cardsContainer_type {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding-top: 25px;
+    margin: 10px;
+}
+
 /* Fiche */
 
 .pokemon-detail .fiche{
