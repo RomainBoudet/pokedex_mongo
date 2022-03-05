@@ -36,7 +36,6 @@ const mainController = {
 
             const pokemonDetail = onePokemon[0];
 
-            console.log(pokemonDetail);
 
             res.status(200).render('pokemonPage', {
                 pokemonDetail

@@ -58,6 +58,26 @@ header a, header a:hover {
 
 /* POKEMON LIST */
 
+.card {
+    flex-basis: 200px;
+    text-align: center;
+    background-color: #982C2C;
+    padding: 1rem;
+    margin: 0.5rem;
+    border-radius: 30px;
+
+
+}
+
+.cardsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 20px;
+    justify-content: space-around;
+    padding: 2rem 0 0 0;
+    padding-top: 20px;
+}
+
 .pokemon-list a{
     text-decoration: none;
 }
