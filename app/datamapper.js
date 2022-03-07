@@ -7,7 +7,7 @@ const {
 var db; // db est accessible partout sans devoir connecté mongo ni lui indiqué la db ou la collection
 connectDb(async () => (db = await getDb(process.env.MONGO_DBCOLLECTION)));
 
-const colorsWeaknesses = ['aabb22', '665544', '7766ee', 'ffbb33', 'd349f2', 'bb5544', 'ff4422', '6699ff', '6666bb', '77cc55', 'ddbb55', '77ddff', 'aa5599', 'ff5599', 'bbaa66', 'aaaabb', '3399ff'];
+const colorsWeaknesses = ['aabb22', '665544', '7766ee', 'ffbb33', 'd349f2', 'bb5544', 'ff4422', '6699ff', '6666bb', '77cc55', 'ddbb55', '77ddff', 'aa5599', 'ff5599', 'bbaa66', 'aaaabb', '3399ff', 'bbaabb'];
 
 
 /* {
@@ -75,7 +75,7 @@ const datamapper = {
             // je récupére tous mes types et faiblesses :
             const types = await db.distinct('type'); // comprend un type "normal", qui n'est pas inclut dans les weaknesses !
             const weaknesses = await db.distinct('weaknesses'); /// Comprend trois type de plus que les "types" (dark, fairy, steel)
-
+            weaknesses.push("Normal");
             // Je dé&finis les couleurs :
             const colorsTypes = ['aabb22', '7766ee', 'ffbb33', 'bb5544', 'ff4422', '6699ff', '6666bb', '77cc55', 'ddbb55', '77ddff', 'bbaabb', 'aa5599', 'ff5599', 'bbaa66', '3399ff'];
 
@@ -389,6 +389,7 @@ const datamapper = {
 
 
             const allTypes = await db.distinct('weaknesses'); /// Comprend trois type de plus que le field "type" (dark, fairy, steel)
+            allTypes.push('Normal');
 
             const result = await db.aggregate([
                 // un seul résultat
@@ -451,15 +452,13 @@ const datamapper = {
                     }
                 },
                 {
-                    $unset: ["arrayColorType"], 
+                    $unset: ["arrayColorType"],
                 },
 
 
             ]).toArray();
 
-            //console.log("result[0] => ", result[0]);
-
-            if (!result || result === undefined) {
+            if (!result || result[0] === undefined) {
                 return null;
             }
             return result;
@@ -471,6 +470,82 @@ const datamapper = {
             console.log("Erreur dans le Datamapper, dans la méthode getAllList : ", error);
         }
     },
+
+    getPokemonsByType: async (myType) => {
+        try {
+
+            //const pokemons = await db.find({type: myType}).toArray();
+            // besoin d'aggregate pour modifier les num en integer...
+
+            const pokemons = await db.aggregate([{
+                    $match: {
+                        type: myType
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        typeAsked: 1,
+                        num: 1,
+                        name: 1,
+                        id: 1,
+                    }
+                },
+                {
+                    $set: {
+                        num: {
+                            $convert: {
+                                input: "$num",
+                                to: "int"
+                            }
+                        }
+
+                    }
+                },
+                {
+                    $addFields: {
+                        typeAsked: myType
+                    }
+                },
+
+            ]).toArray();
+
+
+            if (!pokemons || pokemons.length < 1) {
+                return null;
+            }
+
+            return pokemons;
+
+
+        } catch (error) {
+            console.log("Erreur dans le Datamapper, dans la méthode getAllList : ", error);
+
+        }
+
+    },
+
+    getAllTypes: async () => {
+        try {
+
+
+            const result = await db.distinct('weaknesses');
+            //const result = result1.map(item => item.toLowerCase());
+            result.push('Normal'); // je rajoute le type Normal
+
+            if (!result || result === undefined) {
+                return null;
+            }
+
+            return result;
+
+        } catch (error) {
+            console.log("Erreur dans le Datamapper, dans la méthode getAllList : ", error);
+
+        }
+
+    },
+
 
 
 };

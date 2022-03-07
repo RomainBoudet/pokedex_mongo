@@ -1,0 +1,20 @@
+<%- include('partials/header') %>
+
+<h1 class="title_type_detail text-center"> Pokemon de type <%= pokemons[0].typeAsked%></h1>
+
+<ul class="cardsContainer pokemon-list reset-list row">
+  <% for (const pokemon of pokemons) { %>
+  <li class="card">
+    <a href="/pokemon/<%=pokemon.id%>">
+      <figure class="p-3">
+        <img src="/img/<%=pokemon.id%>.png">
+        <figcaption><%=pokemon.name%> <%=pokemon.num%> </figcaption>
+      </figure>
+    </a>
+  </li>
+
+  <% } %>
+</ul>
+
+
+<%- include('partials/footer') %>

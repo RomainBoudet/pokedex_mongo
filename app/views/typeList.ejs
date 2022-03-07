@@ -4,17 +4,37 @@
 
 <div class="cardsContainer_type">
 
-    <% for (const item of allType) { %>
+  <% for (const item of allType) { %>
 
-    <a href="/type/<%=item.type%>">
-        <h2> <span class="badge rounded-pill" style="background-color:#<%=item.color%>">
-                <%=item.type%>
-            </span></h2>
-    </a>
+  <a href="/type/<%=item.type%>">
+    <h2> <span class="badge rounded-pill" style="background-color:#<%=item.color%>">
+        <%=item.type%>
+      </span></h2>
+  </a>
 
-    <% } %>
+  <% } %>
 
 
 </div>
+
+
+<% if (locals.toastMessage) {%>
+
+  <div class="position-fixed bottom-0 end-0 p-3 text-white" style="z-index: 11">
+    <div id="validateWinnerToast" class="toast" role="alert" data-autohide="false" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header bg-primary text-white">
+        <img src="/images/invader.gif" class="rounded me-2" alt="invader picture">
+        <strong class="me-auto">Pokedex</strong>
+        <small id="date"><%= toastDate %></small>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body bg-primary"><%= toastMessage %></div>
+    </div>
+  </div>
+
+  <%  } else { %>
+
+  <% } %>
+
 
 <%- include('partials/footer') %>

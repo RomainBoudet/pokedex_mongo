@@ -1,4 +1,7 @@
 const datamapper = require('../datamapper');
+const {
+    formatToast
+} = require('../service/date');
 
 const mainController = {
 
@@ -8,12 +11,13 @@ const mainController = {
 
             const pokemonList = await datamapper.getAllPokemon();
 
-            if (pokemonList === null) {
+
+            if (pokemonList === null || pokemonList === undefined) {
                 console.log("Erreur dans le mainController dans la méthode homePage : ", )
                 res.status(500).end();
             }
 
-            res.status(200).render('homepage', {
+           return  res.status(200).render('homepage', {
                 pokemonList
             })
 
@@ -37,7 +41,7 @@ const mainController = {
             const pokemonDetail = onePokemon[0];
 
 
-            res.status(200).render('pokemonPage', {
+           return  res.status(200).render('pokemonPage', {
                 pokemonDetail
             });
 
@@ -54,11 +58,67 @@ const mainController = {
         try {
 
             const typePokemon = await datamapper.getAllList();
-
             const allType = typePokemon[0].colorByType;
 
-            res.status(200).render('typeList', {
-                allType 
+           return  res.status(200).render('typeList', {
+                allType
+            });
+
+        } catch (error) {
+            console.log("Erreur dans le mainController, dans la méthode typeList : ", error);
+            res.status(500).end();
+        }
+
+    },
+
+    typeDetail: async (req, res) => {
+
+        try {
+
+            const type = req.params.type;
+
+            // vérification du type et rendu en cas d'insertion d'un mot inconnu !
+
+            const allTypes = await datamapper.getAllTypes();
+
+            const toastDate = await formatToast();
+
+            if (!allTypes.includes(type)) {
+                // renvoie de la vue typeList avec un toast
+                const toastMessage = `Ce type de pokemon (${type}) n'existe pas ! ❌ `;
+
+                const typePokemon = await datamapper.getAllList();
+                const allType = typePokemon[0].colorByType;
+
+                console.log(`Ce type de pokemon (${type}) n'existe pas ! ❌❌❌`);
+
+
+                return res.status(200).render('typeList', {
+                    allType,
+                    toastDate,
+                    toastMessage
+                })
+            }
+
+            // si le type existe mais ne posséde aucun pokemon :
+            const pokemons = await datamapper.getPokemonsByType(type);
+
+            if (pokemons === null) {
+
+                const typePokemon = await datamapper.getAllList();
+                const allType = typePokemon[0].colorByType;
+                const toastMessage = `Dans cette BDD, Aucun pokemon n'existe pour le type ${type} ! ❌ `;
+                console.log(`Dans cette BDD, Aucun pokemon n'existe pour le type ${type} ! ❌❌ `);
+                return res.status(200).render('typeList', {
+                    allType,
+                    toastDate,
+                    toastMessage
+                })
+            }
+
+
+            return res.status(200).render('typeDetail', {
+                pokemons
             });
 
         } catch (error) {

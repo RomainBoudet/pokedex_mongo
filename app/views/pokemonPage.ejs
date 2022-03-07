@@ -13,7 +13,7 @@
                     <h3 class="mt-4"><%=pokemonDetail.num%> <%=pokemonDetail.name%></h3>
                     <ul class="type-list reset-list d-inline-flex m-2 p-2">
                         <% for(const item of pokemonDetail.colorByType) { %>
-                        <li><a href="/type/<%=item.type.toLowerCase()%>" class="rounded d-block m-2 p-2"
+                        <li><a href="/type/<%=item.type%>" class="rounded d-block m-2 p-2"
                                 style="background-color: #<%=item.color%>"><%=item.type%></a></li>
                         <% } %>
                     </ul>
@@ -80,7 +80,7 @@
                             <ul class="type-list reset-list d-inline-flex mt-2 mb-3">
                                 <div class="col-2">Faiblesses :</div>
                                 <% for(const item of pokemonDetail.colorByWeaknesses) { %>
-                                <li><a href="/type/<%=item.type.toLowerCase()%>" class="rounded d-block m-2 p-2"
+                                <li><a href="/type/<%=item.type%>" class="rounded d-block m-2 p-2"
                                         style="background-color: #<%=item.color%>"><%=item.type%></a></li>
                                 <% } %>
                             </ul>
