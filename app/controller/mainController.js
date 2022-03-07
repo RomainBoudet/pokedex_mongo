@@ -85,12 +85,12 @@ const mainController = {
 
             if (!allTypes.includes(type)) {
                 // renvoie de la vue typeList avec un toast
-                const toastMessage = `Ce type de pokemon (${type}) n'existe pas ! ❌ `;
+                const toastMessage = `⚠️ Ce type de pokemon (${type}) n'existe pas ! ❌ `;
 
                 const typePokemon = await datamapper.getAllList();
                 const allType = typePokemon[0].colorByType;
 
-                console.log(`Ce type de pokemon (${type}) n'existe pas ! ❌❌❌`);
+                console.log(`⚠️ Ce type de pokemon (${type}) n'existe pas ! ❌❌❌`);
 
 
                 return res.status(200).render('typeList', {
@@ -107,8 +107,8 @@ const mainController = {
 
                 const typePokemon = await datamapper.getAllList();
                 const allType = typePokemon[0].colorByType;
-                const toastMessage = `Dans cette BDD, Aucun pokemon n'existe pour le type ${type} ! ❌ `;
-                console.log(`Dans cette BDD, Aucun pokemon n'existe pour le type ${type} ! ❌❌ `);
+                const toastMessage = `Ce type existe bien, mais dans cette BDD, aucun pokemon n'existe avec le type ${type} !  ❌ `;
+                console.log(`Ce type existe bien, mais dans cette BDD, aucun pokemon n'existe avec le type ${type} !  ❌❌❌ `);
                 return res.status(200).render('typeList', {
                     allType,
                     toastDate,

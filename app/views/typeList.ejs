@@ -18,23 +18,45 @@
 </div>
 
 
+
 <% if (locals.toastMessage) {%>
 
-  <div class="position-fixed bottom-0 end-0 p-3 text-white" style="z-index: 11">
-    <div id="validateWinnerToast" class="toast" role="alert" data-autohide="false" aria-live="assertive" aria-atomic="true">
-      <div class="toast-header bg-primary text-white">
-        <img src="/images/invader.gif" class="rounded me-2" alt="invader picture">
-        <strong class="me-auto">Pokedex</strong>
-        <small id="date"><%= toastDate %></small>
-        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-      </div>
-      <div class="toast-body bg-primary"><%= toastMessage %></div>
+<div class="position-fixed bottom-0 end-0 p-3 text-white" style="z-index: 11">
+  <div id="typeListToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header bg-primary text-white">
+      <img src="/img/pikachu.gif" class="rounded me-2" alt="Pikatchu picture" style="width: 55px; height: 55px;">
+      <strong class="me-auto">Pokedex</strong>
+      <small id="date"><%= toastDate %></small>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
+    <div class="toast-body bg-primary"><%= toastMessage %></div>
   </div>
+</div>
 
-  <%  } else { %>
+<%  } else { %>
 
-  <% } %>
+<% } %>
+
+
+<% if (locals.toastMessage) {%>
+
+<script type="text/javascript" nonce="<%=locals.nonce%>" crossorigin="anonymous">
+
+var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+        var toastList = toastElList.map(function(toastEl) {
+        // Creates an array of toasts (it only initializes them)
+          return new bootstrap.Toast(toastEl) // No need for options; use the default options
+        });
+
+
+       toastList.forEach(toast => toast.show()); // This show them
+   
+     
+</script>
+
+<%  } else { %>
+
+<% } %>
 
 
 <%- include('partials/footer') %>
