@@ -1,7 +1,13 @@
+const {
+    getOnePokemonByName
+} = require('../datamapper');
 const datamapper = require('../datamapper');
 const {
     formatToast
 } = require('../service/date');
+
+const Fuse = require('fuse.js');
+
 
 const mainController = {
 
@@ -17,7 +23,7 @@ const mainController = {
                 res.status(500).end();
             }
 
-           return  res.status(200).render('homepage', {
+            return res.status(200).render('homepage', {
                 pokemonList
             })
 
@@ -41,7 +47,7 @@ const mainController = {
             const pokemonDetail = onePokemon[0];
 
 
-           return  res.status(200).render('pokemonPage', {
+            return res.status(200).render('pokemonPage', {
                 pokemonDetail
             });
 
@@ -60,7 +66,7 @@ const mainController = {
             const typePokemon = await datamapper.getAllList();
             const allType = typePokemon[0].colorByType;
 
-           return  res.status(200).render('typeList', {
+            return res.status(200).render('typeList', {
                 allType
             });
 
@@ -132,63 +138,88 @@ const mainController = {
 
         try {
 
-            const pokemon = req.body.search;
+            const search = req.body.search;
+            console.log("search ==>> ", search);
 
-            console.log("pokemon ==>> ", pokemon);
-            // on vérifit que l'utilisateur nous a bien donné un nom de pokemon !
+            //Je récupére ma liste compléte pour l'envoyer a Fuse
+            const allPokemons = await datamapper.getAllPokemon();
 
-            // je récupére tous les nom de pokemon et je tcheke avec un includes
+            if (allPokemons === null || allPokemons === undefined) {
+                console.log("Erreur dans la méthode search, la méthode getallPokemon du datamapper renvoie null !")
+                return res.status(500).end();
+            }
 
-            // si pas dans l'includes alors le relance la homePage avec un toast !
+            const options = {
+                isCaseSensitive: false,
+                includeScore: true,
+                shouldSort: false,
+                // includeMatches: false,
+                // findAllMatches: false,
+                minMatchCharLength: req.body.search.length - 1, //le nombre de caractére min qui doit matcher avec le résultat : je les veux tous ! -1 car j'admet que l'utilisateur puisse faire UNE faute d'orthographe :)
+                // location: 0,
+                threshold: 0.6,
+                // distance: 100,
+                // useExtendedSearch: false,
+                ignoreLocation: true,
+                // ignoreFieldNorm: false,
 
-            // si le nom existe, on renvoie le match 
+                // keys ==> ce dans quoi je décide d'autoriser la recherche !
+                keys: [
+                    "name",
+                ]
+            };
 
+            const fuse = new Fuse(allPokemons, options);
 
-            // vérification du type et rendu en cas d'insertion d'un mot inconnu !
-            const allTypes = await datamapper.getAllTypes();
+            // La valeur que l'on veut chercher
+            const pattern = search
+
+            const resultat = fuse.search(pattern);
+
+            console.log("résultat =>> ", resultat);
+        
 
             const toastDate = await formatToast();
 
-            if (!allTypes.includes(type)) {
-                // renvoie de la vue typeList avec un toast
-                const toastMessage = `⚠️ Ce type de pokemon (${type}) n'existe pas ! ❌ `;
 
-                const typePokemon = await datamapper.getAllList();
-                const allType = typePokemon[0].colorByType;
-
-                console.log(`⚠️ Ce type de pokemon (${type}) n'existe pas ! ❌❌❌`);
-
-
-                return res.status(200).render('typeList', {
-                    allType,
+            if (resultat.length < 1) {
+                console.log(`⚠️ Le nom de ce pokemon (${search}) n'existe pas ! ❌ `);
+                const toastMessage = `⚠️ Le nom de ce pokemon (${search}) n'existe pas ! ❌ `;
+                return res.status(200).render('homepage', {
                     toastDate,
-                    toastMessage
-                })
+                    toastMessage,
+                    allPokemons
+                });
             }
 
-            // si le type existe mais ne posséde aucun pokemon :
-            const pokemons = await datamapper.getPokemonsByType(type);
+            // je veux uniquement les score inférieurs a 0.4 et pas plus de 5 résultats !
+            const goodResult = (resultat.filter(item => item.score < 0.2)).slice(0, 20);
 
-            if (pokemons === null) {
-
-                const typePokemon = await datamapper.getAllList();
-                const allType = typePokemon[0].colorByType;
-                const toastMessage = `Ce type existe bien, mais dans cette BDD, aucun pokemon n'existe avec le type ${type} !  ❌ `;
-                console.log(`Ce type existe bien, mais dans cette BDD, aucun pokemon n'existe avec le type ${type} !  ❌❌❌ `);
-                return res.status(200).render('typeList', {
-                    allType,
-                    toastDate,
-                    toastMessage
-                })
+            // Dans chaque item de ce tableau, je ne veux que la clé "item" pour boucler dessus facilement dans ma vue...
+            const pokemonList = [];
+            for (const elem of goodResult) {
+                pokemonList.push(elem.item)
             }
 
+            console.log("goodResult ==> ", pokemonList);
 
-            return res.status(200).render('typeDetail', {
-                pokemons
+            let toastMessage;
+            if (pokemonList.length > 1) {
+                toastMessage = ` ${pokemonList.length} éléments correspondent à votre recherche (${search}) !`;
+            } else {
+                toastMessage = ` ${pokemonList.length} élément correspond à votre recherche (${search}) !`;
+            }
+
+            return res.status(200).render('homePageAfterSearch', {
+                toastDate,
+                toastMessage,
+                pokemonList,
+
             });
 
+
         } catch (error) {
-            console.log("Erreur dans le mainController, dans la méthode typeList : ", error);
+            console.log("Erreur dans le mainController, dans la méthode search : ", error);
             res.status(500).end();
         }
 

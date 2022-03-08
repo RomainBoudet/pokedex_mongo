@@ -36,20 +36,22 @@ const datamapper = {
 
         try {
 
-
-
             const results = await db.find().project({
                 _id: 0,
                 id: 1,
                 name: 1,
-                num: 1
+                num: 1,
+                next_evolution:1,
+                prev_evolution:1,
             }).sort({
                 name: 1
             }).toArray();
 
-            if (!results[0] || results[0] === undefined) {
+            if (!results[0] || results[0] === undefined || results.length < 1) {
                 return null;
             }
+            console.log("retour du getAllPokemon dans le datamapper == ", results);
+            
             return results;
 
         } catch (error) {
@@ -62,9 +64,6 @@ const datamapper = {
     getOnePokemon: async (idPokemon) => {
 
         try {
-
-
-
 
 
             // je définis un min et un max pour mes valeurs random calculées par Mongo
@@ -541,6 +540,296 @@ const datamapper = {
 
         } catch (error) {
             console.log("Erreur dans le Datamapper, dans la méthode getAllList : ", error);
+
+        }
+
+    },
+
+    getAllPokemonName: async() => {
+
+        try {
+             const result = await db.distinct('name');
+
+             console.log('result ==> ', result);
+
+        if (!result || result === undefined || result.length < 1) {
+            return null;
+        }
+
+        return result;
+
+        } catch (error) {
+            console.log("Erreur dans le Datamapper, dans la méthode getAllList : ", error);
+
+        }
+
+    },
+
+    getOnePokemonByName: async (pokemonName) => {
+
+        try {
+
+
+            // je définis un min et un max pour mes valeurs random calculées par Mongo
+            const min = 10;
+            const max = 100;
+
+            // On va chercher chaque pokemon, et pour chacun de ses types et weaknesses, on va définir une color 
+            // je récupére tous mes types et faiblesses :
+            const types = await db.distinct('type'); // comprend un type "normal", qui n'est pas inclut dans les weaknesses !
+            const weaknesses = await db.distinct('weaknesses'); /// Comprend trois type de plus que les "types" (dark, fairy, steel)
+            weaknesses.push("Normal");
+            // Je dé&finis les couleurs :
+            const colorsTypes = ['aabb22', '7766ee', 'ffbb33', 'bb5544', 'ff4422', '6699ff', '6666bb', '77cc55', 'ddbb55', '77ddff', 'bbaabb', 'aa5599', 'ff5599', 'bbaa66', '3399ff'];
+
+            const result = await db.aggregate([{
+                    // Je ne prend qu'un enregistrement
+                    $match: {
+                        name: pokemonName
+                    }
+                },
+                // Je ne veux pas du field _id en sortie
+                {
+                    $project: {
+                        _id: 0
+                    }
+                },
+                // Pour ajouter un tableau contenant les type et leur couleur associé, en vue de l'utilisé pour construire un objet :
+                {
+                    $addFields: {
+                        arrayColorType: {
+
+                            $zip: {
+                                inputs: [types, colorsTypes],
+                            }
+
+
+                        },
+                        arrayColorWeaknesses: {
+
+                            $zip: {
+                                inputs: [weaknesses, colorsWeaknesses],
+                            }
+
+
+                        }
+
+                    }
+                },
+                // Pour fabriquer un objet type - color, selon les types du Pokemon :
+                {
+                    $addFields: {
+                        colorByType: {
+
+                            $function:
+
+                            {
+                                body: `function (type, arrayColorType) {
+                                let resultArray = [];
+                            for (const item of type) {
+
+                            const arrayFiltered = arrayColorType.filter(([key]) => key === item);
+                                const flat = arrayFiltered.reduce((acc, val) => acc.concat(val), [])
+                                resultArray.push(flat);
+                            }
+
+                            let myObj = {};
+                            let array = [];
+                            for (let i = 0; i < resultArray.length; i++) {
+
+                                myObj[i] = {
+                                    type: resultArray[i][0],
+                                    color: resultArray[i][1]
+                                }
+                                array.push(myObj[i]);
+                            }
+                            return array;
+
+                                }`,
+                                args: ["$type", "$arrayColorType"],
+                                lang: "js",
+                            }
+
+                        },
+                        colorByWeaknesses: {
+                            $function:
+
+                            {
+                                body: `function (weaknesses, arrayColorWeaknesses) {
+                                let resultArray = [];
+                            for (const item of weaknesses) {
+
+                            const arrayFiltered = arrayColorWeaknesses.filter(([key]) => key === item);
+                                const flat = arrayFiltered.reduce((acc, val) => acc.concat(val), [])
+                                resultArray.push(flat);
+                            }
+
+                            let myObj = {};
+                            let array = [];
+                            for (let i = 0; i < resultArray.length; i++) {
+
+                                myObj[i] = {
+                                    type: resultArray[i][0],
+                                    color: resultArray[i][1]
+                                }
+                                array.push(myObj[i]);
+                            }
+                            return array;
+
+                                }`,
+                                args: ["$weaknesses", "$arrayColorWeaknesses"],
+                                lang: "js",
+                            }
+                        }
+                    }
+                },
+                // Pour convertir le field num en integer
+                {
+                    $set: {
+                        num: {
+                            $convert: {
+                                input: "$num",
+                                to: "int"
+                            }
+                        }
+
+                    }
+                },
+                // Pour fabriquer tableau d'objet, avec deux clés - valeur, name et num
+                {
+                    $addFields: {
+                        next_evo: {
+
+                            $map: {
+                                input: "$next_evolution",
+                                as: "item", // optionel. this par défaut => "$$this"
+                                in: { // je construit un objet a chaque itération, en convertisssant le num en format string en integer !   [ { name: 'Kadabra', num: 64 } ]
+                                    name: "$$item.name",
+                                    num: {
+                                        $convert: {
+                                            input: "$$item.num",
+                                            to: "int"
+                                        }
+                                    }
+                                } // ce que je demande à chaque itération
+
+                            }
+
+                        }
+
+                    }
+
+                },
+                {
+                    $addFields: {
+                        prev_evo: {
+
+                            $map: {
+                                input: "$prev_evolution",
+                                as: "item", // optionel. this par défaut => "$$this"
+                                in: { // je construit un objet a chaque itération, en convertisssant le num en format string en integer !   [ { name: 'Kadabra', num: 64 } ]
+                                    name: "$$item.name",
+                                    num: {
+                                        $convert: {
+                                            input: "$$item.num",
+                                            to: "int"
+                                        }
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                },
+                {
+                    $addFields: { // je construit un random entre 10 et 100 via mongo ! Peu import les valeurs réelles...
+                        defense: {
+                            $add: [{
+                                $floor: [{
+                                    $multiply: [{
+                                        $rand: {}
+                                    }, {
+                                        $subtract: [max, min]
+                                    }]
+                                }]
+                            }, min]
+                        },
+                        attaque: {
+                            $add: [{
+                                $floor: [{
+                                    $multiply: [{
+                                        $rand: {}
+                                    }, {
+                                        $subtract: [max, min]
+                                    }]
+                                }]
+                            }, min]
+                        },
+                        pv: {
+                            $add: [{
+                                $floor: [{
+                                    $multiply: [{
+                                        $rand: {}
+                                    }, {
+                                        $subtract: [max, min]
+                                    }]
+                                }]
+                            }, min]
+                        },
+                        attaque_spe: {
+                            $add: [{
+                                $floor: [{
+                                    $multiply: [{
+                                        $rand: {}
+                                    }, {
+                                        $subtract: [max, min]
+                                    }]
+                                }]
+                            }, min]
+                        },
+                        defense_spe: {
+                            $add: [{
+                                $floor: [{
+                                    $multiply: [{
+                                        $rand: {}
+                                    }, {
+                                        $subtract: [max, min]
+                                    }]
+                                }]
+                            }, min]
+                        },
+                        vitesse: {
+                            $add: [{
+                                $floor: [{
+                                    $multiply: [{
+                                        $rand: {}
+                                    }, {
+                                        $subtract: [max, min]
+                                    }]
+                                }]
+                            }, min]
+                        },
+
+                    }
+                },
+                // on supprime les champs non nécéssaire.
+                {
+                    $unset: ["arrayColorType", "arrayColorWeaknesses", "next_evolution", "prev_evolution"]
+                }
+
+            ]).toArray();
+
+
+            if (!result || result === undefined) {
+                return null;
+            }
+            return result;
+
+        } catch (error) {
+            console.log("Erreur dans le Datamapper, dans la méthode getOnePokemonByName : ", error);
 
         }
 
