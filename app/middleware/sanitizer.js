@@ -70,7 +70,7 @@ const cleanQuery = (req, res, next) => {
 
         const theQuery = req.query;
 
-        for (let prop in theBody) {
+        for (let prop in theQuery) {
             theQuery[prop] = validator.blacklist(theQuery[prop], ['>']);
             theQuery[prop] = validator.blacklist(theQuery[prop], ['<']);
             theQuery[prop] = validator.blacklist(theQuery[prop], ['&']);

@@ -226,10 +226,9 @@ const mainController = {
         try {
 
             const search = req.body.search;
-            console.log("search ==>> ", search);
 
             //Je récupére ma liste compléte pour l'envoyer a Fuse
-            const allPokemons = await datamapper.getAllPokemon();
+            const allPokemons = await datamapper.getAllPokemon({name:1});
 
             if (allPokemons === null || allPokemons === undefined) {
                 console.log("Erreur dans la méthode search, la méthode getallPokemon du datamapper renvoie null !")
