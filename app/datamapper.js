@@ -1,4 +1,7 @@
 const {
+    Double
+} = require('mongodb');
+const {
     getDb,
     connectDb
 } = require('./database');
@@ -32,7 +35,7 @@ const colorsWeaknesses = ['aabb22', '665544', '7766ee', 'ffbb33', 'd349f2', 'bb5
 
 const datamapper = {
 
-    getAllPokemon: async () => {
+    /* getAllPokemon: async (data) => {
 
         try {
 
@@ -41,17 +44,85 @@ const datamapper = {
                 id: 1,
                 name: 1,
                 num: 1,
-                next_evolution:1,
-                prev_evolution:1,
-            }).sort({
-                name: 1
-            }).toArray();
+                next_evolution: 1,
+                prev_evolution: 1,
+            }).sort(
+                data
+            ).toArray();
 
             if (!results[0] || results[0] === undefined || results.length < 1) {
                 return null;
             }
-            console.log("retour du getAllPokemon dans le datamapper == ", results);
-            
+
+            return results;
+
+        } catch (error) {
+            console.log("Erreur dans le Datamapper, dans la méthode getAllPokemon : ", error);
+
+        }
+    }, */
+
+    getAllPokemon: async (data) => {
+
+        // je dois convertir le poid et la hauteur (en string) en float comparable que l'on peut classer.  
+
+        try {
+
+            const results = await db.aggregate([{
+                    $project: {
+                        id: 0,
+                        id: 1,
+                        name: 1,
+                        height: {
+                            $convert: {
+                                input: { // je prend du premier caractéres au 4ieme.. car tous les même format
+                                    $substr: ['$height', 0, 4]
+                                },
+                                to: "double",
+                            }
+
+                        },
+                        // Pour le weight, je dois splitter la string avec l'espace car les poids n'on pas tous le même format ('235.0 kg' // '8.0 kg') ! 
+                        // et pour selectionner le premier item du tabelau qui contient mon poid, je unwind et match !
+                        weight: {
+                            $split: ['$weight', " "]
+                        },
+                        num: 1,
+                        next_evolution: 1,
+                        prev_evolution: 1,
+
+                    }
+                },
+                // je recrée de nouveau enregistrement pour chaque valeur dans weight (donc X2 pour les records ici)
+                {
+                    $unwind: '$weight'
+                },
+                // Je prend uniquement les items avec un poid qui correspond a un float !
+                {
+                    $match: {
+                        weight: /[+-]?([0-9]*[.])?[0-9]+/
+                    }
+                },
+                {// je reconvertit ce nouvel enregistrement choisie (le float), en double et non en string !
+                    $set: {
+                        weight: {
+                            $convert: {
+                                input:'$weight',
+                                to: "double",
+                            }
+                        }
+                    }
+                },
+                {// j'applique le choix ascendant ou descendant du classement !
+                    $sort: data
+                }
+
+            ]).toArray();
+
+            if (!results[0] || results[0] === undefined || results.length < 1) {
+                return null;
+            }
+
             return results;
 
         } catch (error) {
@@ -545,18 +616,18 @@ const datamapper = {
 
     },
 
-    getAllPokemonName: async() => {
+    getAllPokemonName: async () => {
 
         try {
-             const result = await db.distinct('name');
+            const result = await db.distinct('name');
 
-             console.log('result ==> ', result);
+            console.log('result ==> ', result);
 
-        if (!result || result === undefined || result.length < 1) {
-            return null;
-        }
+            if (!result || result === undefined || result.length < 1) {
+                return null;
+            }
 
-        return result;
+            return result;
 
         } catch (error) {
             console.log("Erreur dans le Datamapper, dans la méthode getAllList : ", error);

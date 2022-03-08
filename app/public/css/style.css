@@ -7,6 +7,7 @@ body {
 header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     color: #C04140;
     border-radius: 1.5em;
     padding: 0.6em 1.5em;
@@ -16,44 +17,45 @@ header h1 {
     font-size: 2em;
 }
 
-nav{
+nav {
     display: flex;
     font-size: 1em;
 }
 
-nav ul{
+nav ul {
     list-style: none;
     padding: 0;
-    margin:0;
+    margin: 0;
 }
 
-header a, header a:hover {
+header a,
+header a:hover {
     color: #C04140;
 }
 
-.reset-list{
+.reset-list {
     list-style: none;
     padding: 0;
-    margin:0;
+    margin: 0;
 }
 
-.error .body{
+.error .body {
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
 }
 
-.error h2{
+.error h2 {
     font-size: 10em;
 }
 
-.error p{
+.error p {
     font-size: 2em;
 }
 
-.error img{
-    width:100%;
+.error img {
+    width: 100%;
 }
 
 /* POKEMON LIST */
@@ -78,24 +80,24 @@ header a, header a:hover {
     padding-top: 20px;
 }
 
-.pokemon-list a{
+.pokemon-list a {
     text-decoration: none;
 }
 
-.pokemon-list figure{
+.pokemon-list figure {
     border-radius: 1.5em;
     background-color: #982D2C;
     color: #F9D2D3;
     text-align: center;
 }
 
-.pokemon-list img{
-    width:100%;
+.pokemon-list img {
+    width: 100%;
 }
 
 /* TYPE LIST */
 
-.type-list a{
+.type-list a {
     display: block;
     text-decoration: none;
     color: white;
@@ -113,54 +115,56 @@ header a, header a:hover {
 
 /* Fiche */
 
-.pokemon-detail .fiche{
+.pokemon-detail .fiche {
     background-color: #982D2C;
     border-radius: 1em;
 }
 
-.pokemon-detail .type-list a{
+.pokemon-detail .type-list a {
     font-size: 0.8em;
 }
 
-.pokemon-detail .image img{
-    width:100%;
+.pokemon-detail .image img {
+    width: 100%;
 }
 
-.pokemon-detail .stats{
-    font-size:0.9em;
+.pokemon-detail .stats {
+    font-size: 0.9em;
 }
 
-.pokemon-detail .stats .row{
+.pokemon-detail .stats .row {
     margin-bottom: 0.3em;
 }
 
-.pokemon-detail .stats .status-bar{
+.pokemon-detail .stats .status-bar {
     width: 100%;
     background-color: #632B2B;
-    height:1.3em;
+    height: 1.3em;
 }
-.pokemon-detail .stats .status-bar span{
+
+.pokemon-detail .stats .status-bar span {
     display: block;
-    height:1.3em;
+    height: 1.3em;
     background-color: white;
 }
 
 .pokemon-detail footer {
-    line-height:4em;
+    line-height: 4em;
 }
 
-.pokemon-detail footer a{
+.pokemon-detail footer a {
     color: #F9D2D3;
 }
 
 /* Input search : */
 
-.search-box{
+.search-box {
     width: fit-content;
     height: fit-content;
     position: relative;
-  }
-  .form-control{
+}
+
+.input-control {
     height: 50px;
     width: 50px;
     border-style: none;
@@ -172,15 +176,17 @@ header a, header a:hover {
     transition: all .5s ease-in-out;
     background-color: #f59d9c;
     padding-right: 40px;
-    color:#982D2C;
-  }
-  .form-control::placeholder{
-    color:rgba(247, 15, 15, 0.5);
+    color: #982D2C;
+}
+
+.input-control::placeholder {
+    color: rgba(247, 15, 15, 0.5);
     font-size: 18px;
     letter-spacing: 2px;
     font-weight: 100;
-  }
-  .btn-search{
+}
+
+.btn-search {
     width: 50px;
     height: 50px;
     border-style: none;
@@ -191,25 +197,35 @@ header a, header a:hover {
     border-radius: 50%;
     position: absolute;
     right: 0px;
-    color:#982D2C ;
-    background-color:transparent;
-    pointer-events: painted;  
-  }
-  .btn-search:focus ~ .form-control{
+    color: #982D2C;
+    background-color: transparent;
+    pointer-events: painted;
+}
+
+.btn-search:focus~.input-control {
     width: 300px;
     border-radius: 0px;
     background-color: transparent;
-    border-bottom:1px solid rgba(255,255,255,.5);
+    border-bottom: 1px solid rgba(255, 255, 255, .5);
     transition: all 500ms cubic-bezier(0, 0.110, 0.35, 2);
-  }
-  .form-control:focus{
+}
+
+.input-control:focus {
     width: 300px;
     border-radius: 0px;
     background-color: transparent;
-    border-bottom:1px solid rgba(255,255,255,.5);
+    border-bottom: 1px solid rgba(255, 255, 255, .5);
     transition: all 500ms cubic-bezier(0, 0.110, 0.35, 2);
-  }
+}
+
 /* si input invalid */
-  input:invalid {
+input:invalid {
     border: 2px dashed red;
-  }
+}
+
+/* bouton en colonne de la home page */
+.containerbutton {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}

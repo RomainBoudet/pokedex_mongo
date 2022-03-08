@@ -8,24 +8,111 @@ const {
 
 const Fuse = require('fuse.js');
 
+let toastDate;
+(async () => {
+    try {
+        toastDate = await formatToast();
+    } catch (error) {
+        console.log('Erreur dans la recherche de la date pour le toast !', error);
+    }
+})();
+
 
 const mainController = {
 
-    homepage: async (_, res) => {
+    homepage: async (req, res) => {
 
         try {
 
-            const pokemonList = await datamapper.getAllPokemon();
+            let classement;
+            if (!req.query.classement) {
+                classement = "null";
+            } else {
+                classement = req.query.classement;
+            }
+            // req.query.classsement peut valoir : alphacroissant /  alphadecroissant / poidcroissant / 
+            // poiddecroissant /  hauteurcroissant / hauteurdecroissant
 
-
+            // je vérifie que mon input a pas été modifié 
+            const trueInput = ['alphacroissant', 'alphadecroissant', 'poidcroissant', 'poiddecroissant', 'hauteurcroissant', 'hauteurdecroissant', 'null'];
+            let pokemonList = await datamapper.getAllPokemon({
+                name: 1
+            });
             if (pokemonList === null || pokemonList === undefined) {
                 console.log("Erreur dans le mainController dans la méthode homePage : ", )
                 res.status(500).end();
             }
 
-            return res.status(200).render('homepage', {
-                pokemonList
-            })
+            if (!trueInput.includes(classement)) {
+                console.log(`⚠️ Ce type de classement (${classement}) n'existe pas ! ❌ `);
+                const toastMessage = `⚠️ Ce type de classement (${classement}) n'existe pas ! ❌ `;
+                return res.status(200).render('homepage', {
+                    toastDate,
+                    toastMessage,
+                    pokemonList
+                })
+            };
+
+             switch (classement) {
+                case 'alphacroissant':
+                    pokemonList = await datamapper.getAllPokemon({
+                        name: 1
+                    });
+
+                    return res.status(200).render('homepage', {
+                        pokemonList
+                    });
+
+                case 'alphadecroissant':
+                    pokemonList = await datamapper.getAllPokemon({
+                        name: -1
+                    });
+
+                    return res.status(200).render('homepage', {
+                        pokemonList
+                    });
+
+                case 'poidcroissant':
+
+                    pokemonList = await datamapper.getAllPokemon({
+                        weight: -1
+                    });
+
+                    return res.status(200).render('homepage', {
+                        pokemonList
+                    });
+
+                case 'poiddecroissant':
+                    pokemonList = await datamapper.getAllPokemon({
+                        weight: 1
+                    });
+
+                    return res.status(200).render('homepage', {
+                        pokemonList
+                    });
+                case 'hauteurcroissant':
+                    pokemonList = await datamapper.getAllPokemon({
+                        height: -1
+                    });
+
+                    return res.status(200).render('homepage', {
+                        pokemonList
+                    });
+                case 'hauteurdecroissant':
+                    pokemonList = await datamapper.getAllPokemon({
+                        height: 1
+                    });
+
+                    return res.status(200).render('homepage', {
+                        pokemonList
+                    });
+
+                default:
+                    // par défault ordre alphabétique croissant !
+                    return res.status(200).render('homepage', {
+                        pokemonList
+                    });
+            }
 
         } catch (error) {
 
@@ -48,6 +135,7 @@ const mainController = {
 
 
             return res.status(200).render('pokemonPage', {
+
                 pokemonDetail
             });
 
@@ -87,7 +175,6 @@ const mainController = {
 
             const allTypes = await datamapper.getAllTypes();
 
-            const toastDate = await formatToast();
 
             if (!allTypes.includes(type)) {
                 // renvoie de la vue typeList avec un toast
@@ -173,26 +260,23 @@ const mainController = {
 
             // La valeur que l'on veut chercher
             const pattern = search
-
             const resultat = fuse.search(pattern);
 
-            console.log("résultat =>> ", resultat);
-        
-
-            const toastDate = await formatToast();
-
+            // je mutualise la date (qui pourrait également être un service..)
 
             if (resultat.length < 1) {
                 console.log(`⚠️ Le nom de ce pokemon (${search}) n'existe pas ! ❌ `);
                 const toastMessage = `⚠️ Le nom de ce pokemon (${search}) n'existe pas ! ❌ `;
+                const pokemonList = allPokemons;
                 return res.status(200).render('homepage', {
                     toastDate,
                     toastMessage,
-                    allPokemons
+                    pokemonList
                 });
             }
 
-            // je veux uniquement les score inférieurs a 0.4 et pas plus de 5 résultats !
+            // je veux uniquement les score inférieurs a 0.4 et pas plus de 20 résultats !
+            //! changer la valeur du filtre si on veut plus de résultat ou des résultats moins pertinent (monter le score...)
             const goodResult = (resultat.filter(item => item.score < 0.2)).slice(0, 20);
 
             // Dans chaque item de ce tableau, je ne veux que la clé "item" pour boucler dessus facilement dans ma vue...
@@ -201,8 +285,6 @@ const mainController = {
                 pokemonList.push(elem.item)
             }
 
-            console.log("goodResult ==> ", pokemonList);
-
             let toastMessage;
             if (pokemonList.length > 1) {
                 toastMessage = ` ${pokemonList.length} éléments correspondent à votre recherche (${search}) !`;
@@ -210,7 +292,7 @@ const mainController = {
                 toastMessage = ` ${pokemonList.length} élément correspond à votre recherche (${search}) !`;
             }
 
-            return res.status(200).render('homePageAfterSearch', {
+            return res.status(200).render('homepage', {
                 toastDate,
                 toastMessage,
                 pokemonList,
