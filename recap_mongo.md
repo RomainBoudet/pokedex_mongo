@@ -43,7 +43,7 @@ Pas besoin de créer la base, `mongorestore` va le faire pour nous.
 
 ### Analyser les données
 
-1. On se reconnecte : `mongo`
+1. On se reconnecte : `mongosh`
 2. `show dbs` : tiens, pokemon est apparu
 3. `use pokemon` pour sélectionner la base
 4. `show collections` : une seule collection, "samples_pokemon"
@@ -138,9 +138,6 @@ Techniquement parlant, `aggregate` est _juste_ une méthode des collections de m
 
 Mais ses capacités sont tellement gigantesques qu'on parle souvent du _framework_ aggregate.
 
-Direction [le markdown aggregate](./aggregate.md) pour la suite !
-
-Attention, la syntaxe est pour le moins velue (voire piquante!), et difficile à prendre en main, ce qui vaut à aggregate une réputation de "monstre efficace mais indomptable".
 
 ## Express
 
@@ -150,20 +147,9 @@ Pour dialoguer avec une base Mongo, 2 solutions :
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 # AGGREGATE
 
-Faire de la data avec de la data. Et vice et versa.
+Faire de la data avec de la data.
 
 ## Le principe
 
