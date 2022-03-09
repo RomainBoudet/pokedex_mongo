@@ -20,7 +20,7 @@ https://docs.mongodb.com/manual/reference/operator/aggregation/rank/
 
 ## Lancer le serveur
 
-`sudo service mongod start`
+`sudo systemctl start mongod.service`
 
 ## Lancer le client (CLI)
 
