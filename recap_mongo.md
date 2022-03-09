@@ -49,7 +49,6 @@ Pas besoin de créer la base, `mongorestore` va le faire pour nous.
 4. `show collections` : une seule collection, "samples_pokemon"
 5. c'est nul ce nom de collection ! Allez on la renomme : `db.samples_pokemon.renameCollection("pokedex")`
 
-On remarque que les commandes ressemblent à du JS, comme si les collections étaient des objets. C'est normal, c'est le cas !! Toute la CLI de MongoDB est écrite en Javascript :heart: !!
 
 ### Premières requêtes
 
