@@ -95,23 +95,6 @@ header a:hover {
     width: 100%;
 }
 
-/* TYPE LIST */
-
-.type-list a {
-    display: block;
-    text-decoration: none;
-    color: white;
-    text-align: center;
-    border-radius: 1em;
-}
-
-.cardsContainer_type {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    padding-top: 25px;
-    margin: 10px;
-}
 
 /* Fiche */
 
@@ -220,7 +203,7 @@ header a:hover {
 
 /* si input invalid */
 input:invalid {
-    border: 2px dashed red;
+    border: 2px dashed red !important;
 }
 
 /* bouton en colonne de la home page */
@@ -228,4 +211,57 @@ input:invalid {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+}
+
+.containertype {
+    margin-left: 2rem;
+    margin-bottom: 2rem;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+a {
+    color: inherit;
+    /* blue colors for links too */
+    text-decoration: inherit;
+    /* no underline */
+}
+
+a:hover {
+    color: inherit;
+    /* blue colors for links too */
+    text-decoration: inherit;
+    /* no underline */
+}
+
+/* TYPE LIST */
+
+/*  .type-list a {
+    display: block;
+    text-decoration: none;
+    color: white;
+    text-align: center;
+    border-radius: 1em;
+}  */
+
+.cardsContainer_type {
+    display: flex;
+    flex-wrap: wrap;
+    /*  justify-content: space-between;*/
+    padding-top: 25px;
+    margin: 10px;
+}
+
+.buttontype1 {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    padding-left: 1rem;
+}
+
+.buttontype2 {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    padding-left: 0.5rem;
 }

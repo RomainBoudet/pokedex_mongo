@@ -1,7 +1,4 @@
 const {
-    Double
-} = require('mongodb');
-const {
     getDb,
     connectDb
 } = require('./database');
@@ -11,6 +8,7 @@ var db; // db est accessible partout sans devoir connecté mongo ni lui indiqué
 connectDb(async () => (db = await getDb(process.env.MONGO_DBCOLLECTION)));
 
 const colorsWeaknesses = ['aabb22', '665544', '7766ee', 'ffbb33', 'd349f2', 'bb5544', 'ff4422', '6699ff', '6666bb', '77cc55', 'ddbb55', '77ddff', 'aa5599', 'ff5599', 'bbaa66', 'aaaabb', '3399ff', 'bbaabb'];
+const colorsTypes = ['aabb22', '7766ee', 'ffbb33', 'bb5544', 'ff4422', '6699ff', '6666bb', 'ff5599', 'ddbb55', '77ddff', 'bbaabb', 'aa5599', 'ff5599', 'bbaa66', '3399ff'];
 
 
 /* {
@@ -103,17 +101,17 @@ const datamapper = {
                         weight: /[+-]?([0-9]*[.])?[0-9]+/
                     }
                 },
-                {// je reconvertit ce nouvel enregistrement choisie (le float), en double et non en string !
+                { // je reconvertit ce nouvel enregistrement choisie (le float), en double et non en string !
                     $set: {
                         weight: {
                             $convert: {
-                                input:'$weight',
+                                input: '$weight',
                                 to: "double",
                             }
                         }
                     }
                 },
-                {// j'applique le choix ascendant ou descendant du classement !
+                { // j'applique le choix ascendant ou descendant du classement !
                     $sort: data
                 }
 
@@ -147,7 +145,6 @@ const datamapper = {
             const weaknesses = await db.distinct('weaknesses'); /// Comprend trois type de plus que les "types" (dark, fairy, steel)
             weaknesses.push("Normal");
             // Je dé&finis les couleurs :
-            const colorsTypes = ['aabb22', '7766ee', 'ffbb33', 'bb5544', 'ff4422', '6699ff', '6666bb', '77cc55', 'ddbb55', '77ddff', 'bbaabb', 'aa5599', 'ff5599', 'bbaa66', '3399ff'];
 
             const result = await db.aggregate([{
                     // Je ne prend qu'un enregistrement
@@ -452,7 +449,7 @@ const datamapper = {
 
     },
 
-    getAllList: async () => {
+    getAllList2: async () => {
 
         try {
 
@@ -901,6 +898,86 @@ const datamapper = {
 
         } catch (error) {
             console.log("Erreur dans le Datamapper, dans la méthode getOnePokemonByName : ", error);
+
+        }
+
+    },
+
+    getAllList: async () => {
+
+        /* {
+    total: 12,
+    list: [
+      'Caterpie',   'Metapod',
+      'Butterfree', 'Weedle',
+      'Kakuna',     'Beedrill',
+      'Paras',      'Parasect',
+      'Venonat',    'Venomoth',
+      'Scyther',    'Pinsir'
+    ],
+    name: 'Bug'
+  }, */
+
+        try {
+
+            const result = await db.aggregate([{
+                    $unwind: "$type"
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        id: 1,
+                        name: 1,
+                        type: 1
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$type",
+                        total: {
+                            $sum: 1
+                        },
+                        list: {
+                            $push: {
+                                name: "$name",
+                                id: "$id"
+                            }
+                        }
+                    }
+                },
+                {
+                    $set: {
+                        name: '$_id'
+                    }
+                },
+                {
+                    $unset: '_id'
+                },
+                {
+                    $sort: {
+                        total: -1
+                    }
+                }
+            ]).toArray();
+
+            // et pour chaque type, j'insére un valeur color !
+            const colorSortByTotalType = ['aa5599', '3399ff', 'bbaabb', '6699ff', 'ff5599', 'ff5599', 'ddbb55', 'aabb22', 'ff4422', 'bbaa66', 'ffbb33', 'bb5544', '77ddff', '6666bb', '7766ee'];
+
+            for (let i = 0; i < colorSortByTotalType.length; i++) {
+                result[i].color = colorSortByTotalType[i];
+            };
+
+            console.log(result);
+            console.log(result[0]);
+
+            if (!result || result === undefined) {
+                return null;
+            }
+
+            return result;
+
+        } catch (error) {
+            console.log("Erreur dans le Datamapper, dans la méthode test : ", error);
 
         }
 

@@ -6,11 +6,20 @@
 
   <% for (const item of allType) { %>
 
-  <a href="/type/<%=item.type%>">
-    <h2> <span class="badge rounded-pill" style="background-color:#<%=item.color%>">
-        <%=item.type%>
-      </span></h2>
-  </a>
+  <div class="containertype">
+    <a href="/type/<%=item.name%>" data-bs-toggle="tooltip" data-bs-placement="top" title="<%=item.total%> Pokemons" >
+      <h2 class="buttontype1" class="rounded-left" style="background-color:#<%=item.color%>">
+        <%=item.name%></h2>
+    </a>
+    <h2 class="buttontype2 dropdown-toggle" style="background-color:#<%=item.color%>"  id="dropdownMenuButton1" data-bs-toggle="dropdown">
+      </h2>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+        <% for (const pokemon of item.list) { %>
+          <li><a class="dropdown-item" href="/pokemon/<%=pokemon.id%>"><%=pokemon.name%></a></li>
+          <% } %>
+
+      </ul>
+  </div>
 
   <% } %>
 
@@ -41,17 +50,14 @@
 <% if (locals.toastMessage) {%>
 
 <script type="text/javascript" nonce="<%=locals.nonce%>" crossorigin="anonymous">
+  var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+  var toastList = toastElList.map(function (toastEl) {
+    // Creates an array of toasts (it only initializes them)
+    return new bootstrap.Toast(toastEl) // No need for options; use the default options
+  });
 
-var toastElList = [].slice.call(document.querySelectorAll('.toast'))
-        var toastList = toastElList.map(function(toastEl) {
-        // Creates an array of toasts (it only initializes them)
-          return new bootstrap.Toast(toastEl) // No need for options; use the default options
-        });
 
-
-       toastList.forEach(toast => toast.show()); // This show them
-   
-     
+  toastList.forEach(toast => toast.show()); // This show them
 </script>
 
 <%  } else { %>
