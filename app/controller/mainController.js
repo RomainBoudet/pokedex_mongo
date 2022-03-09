@@ -53,7 +53,7 @@ const mainController = {
                 })
             };
 
-             switch (classement) {
+            switch (classement) {
                 case 'alphacroissant':
                     pokemonList = await datamapper.getAllPokemon({
                         name: 1
@@ -151,9 +151,8 @@ const mainController = {
 
         try {
 
-            const typePokemon = await datamapper.getAllList();
-            const allType = typePokemon[0].colorByType;
-
+            const allType = await datamapper.getAllList();
+            
             return res.status(200).render('typeList', {
                 allType
             });
@@ -228,7 +227,9 @@ const mainController = {
             const search = req.body.search;
 
             //Je récupére ma liste compléte pour l'envoyer a Fuse
-            const allPokemons = await datamapper.getAllPokemon({name:1});
+            const allPokemons = await datamapper.getAllPokemon({
+                name: 1
+            });
 
             if (allPokemons === null || allPokemons === undefined) {
                 console.log("Erreur dans la méthode search, la méthode getallPokemon du datamapper renvoie null !")
