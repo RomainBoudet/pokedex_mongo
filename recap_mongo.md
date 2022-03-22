@@ -5,6 +5,11 @@
 - *Collection* : presque équivalent à une table. C'est un ensemble non structuré de documents (c'est-à-dire qu'ils n'ont pas forcément tous le même format).
 - *BSON* : _Binary JSON_. Un format développé par et pour MongoDB, basé sur la notation JSON.
 
+## Créer une BDD et une collection
+
+- Pour créer une db : use myDBname
+- Pour créer une collection via mongosh : db.createCollection("myCollection")
+
 ## Install 
 https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
 
